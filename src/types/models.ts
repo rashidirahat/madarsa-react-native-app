@@ -130,6 +130,36 @@ export interface Profile {
   photoUri?: string | null;
 }
 
+export type DonationCategory = 'zakat' | 'sadaqah';
+
+export interface DonationRecord {
+  _id?: string;
+  id?: string;
+  user?: string;
+  category?: string;
+  amount?: number;
+  year?: number;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+export interface DonationTotals {
+  year?: number;
+  zakat: number;
+  sadaqah: number;
+  total: number;
+  records: DonationRecord[];
+}
+
+export interface DonationInput {
+  amount: number;
+  category: DonationCategory;
+  year: string;
+  description: string;
+}
+
 export const TEACHER_SUBJECTS = [
   'Urdu',
   'Arabic',

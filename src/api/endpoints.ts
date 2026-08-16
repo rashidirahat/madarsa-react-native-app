@@ -29,6 +29,10 @@ export const ENDPOINTS = {
     list: '/users',
     role: (id: string) => `/users/${id}/role`,
   },
+  donations: {
+    create: '/donations',
+    totals: '/donations/totals',
+  },
 } as const;
 
 export const API_BASE_URL =

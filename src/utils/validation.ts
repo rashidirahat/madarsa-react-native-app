@@ -77,6 +77,43 @@ export const fundSchema = z
 
 export type FundFormValues = z.infer<typeof fundSchema>;
 
+export const donationSchema = z
+  .object({
+    amount: z
+      .string()
+      .min(1, 'Amount is required')
+      .regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid amount (e.g. 500 or 250.50)'),
+    category: z.enum(['zakat', 'sadaqah'], { message: 'Select a category' }),
+    year: z
+      .string()
+      .min(1, 'Year is required')
+      .regex(/^\d{4}$/, 'Enter a valid year (e.g. 2026)')
+      .refine((value) => {
+        const year = Number(value);
+        return year >= 1900 && year <= 2100;
+      }, 'Enter a year between 1900 and 2100'),
+    description: z.string().min(1, 'Description is required').max(200, 'Description is too long'),
+  })
+  .superRefine((data, ctx) => {
+    const amount = Number(data.amount);
+    if (amount <= 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['amount'],
+        message: 'Amount must be greater than zero',
+      });
+    }
+    if (amount > 100_000_000) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['amount'],
+        message: 'Amount is too large',
+      });
+    }
+  });
+
+export type DonationFormValues = z.infer<typeof donationSchema>;
+
 export const teacherSubjectSchema = z.object({
   subject: z.enum(TEACHER_SUBJECTS, { message: 'Select a subject' }),
   className: z.string().min(1, 'Class name is required').max(60, 'Class name is too long'),
