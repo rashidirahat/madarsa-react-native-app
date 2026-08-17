@@ -16,6 +16,17 @@ export const ENDPOINTS = {
   teachers: {
     list: '/teachers',
     detail: (id: string) => `/teachers/${id}`,
+    assignedStudents: (teacherId: string) => `/teachers/${teacherId}/students`,
+    assignedStudent: (teacherId: string, studentId: string) =>
+      `/teachers/${teacherId}/students/${studentId}`,
+    exams: (teacherId: string, studentId: string) =>
+      `/teachers/${teacherId}/students/${studentId}/exams`,
+    exam: (teacherId: string, studentId: string, examId: string) =>
+      `/teachers/${teacherId}/students/${studentId}/exams/${examId}`,
+    studyProgress: (teacherId: string, studentId: string) =>
+      `/teachers/${teacherId}/students/${studentId}/study-progress`,
+    studyProgressItem: (teacherId: string, studentId: string, studyProgressId: string) =>
+      `/teachers/${teacherId}/students/${studentId}/study-progress/${studyProgressId}`,
   },
   expenses: {
     get: '/expenses',

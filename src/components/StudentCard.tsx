@@ -12,9 +12,10 @@ interface StudentCardProps {
   student: Student;
   onPress?: () => void;
   right?: ReactNode;
+  summary?: ReactNode;
 }
 
-export function StudentCard({ student, onPress, right }: StudentCardProps) {
+export function StudentCard({ student, onPress, right, summary }: StudentCardProps) {
   const { colors } = useTheme();
 
   const content = (
@@ -43,6 +44,7 @@ export function StudentCard({ student, onPress, right }: StudentCardProps) {
             tone={student.studentType === 'hostel' ? 'accent' : 'neutral'}
           />
         </View>
+        {summary ? <View style={styles.summary}>{summary}</View> : null}
       </View>
       {right ?? (
         <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
@@ -90,6 +92,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     marginTop: 4,
+    flexWrap: 'wrap',
+  },
+  summary: {
+    fontSize: 13,
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     flexWrap: 'wrap',
   },
 });

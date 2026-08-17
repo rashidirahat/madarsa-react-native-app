@@ -2,9 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { ProfileApiUnavailableError, getErrorMessage } from '@/api/errors';
+import { getErrorMessage } from '@/api/errors';
 import { AppHeader } from '@/components/AppHeader';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -12,19 +12,13 @@ import { Card } from '@/components/Card';
 import { DonationSheet } from '@/components/DonationSheet';
 import { RequireAuth } from '@/components/RequireAuth';
 import { Screen } from '@/components/Screen';
-import { TextField } from '@/components/TextField';
 import { useAuth } from '@/context/AuthProvider';
 import { useToast } from '@/context/ToastProvider';
 import { useDonationTotals } from '@/hooks/useDonationTotals';
-import {
-  getLocalProfile,
-  saveLocalProfile,
-  updateProfileName,
-  uploadProfilePhoto,
-} from '@/services/profileService';
+import { getLocalProfile, saveLocalProfile } from '@/services/profileService';
 import { useTheme } from '@/theme/ThemeProvider';
 import { DonationCategory, DonationRecord } from '@/types/models';
-import { formatCurrency, formatDate } from '@/utils/format';
+import { displayRole, formatCurrency, formatDate } from '@/utils/format';
 
 const CATEGORY_META: Record<DonationCategory, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
   zakat: { label: 'Zakat', icon: 'water-outline' },
@@ -117,11 +111,10 @@ export default function ProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const toast = useToast();
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
 
   const [name, setName] = useState(user?.name ?? '');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<DonationCategory | null>(null);
   const [donationOpen, setDonationOpen] = useState(false);
 
@@ -158,45 +151,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const onSave = async () => {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      Alert.alert('Name required', 'Please enter your name.');
-      return;
-    }
-    setSaving(true);
-    try {
-      await saveLocalProfile({ name: trimmed, photoUri });
-      await updateUser({ name: trimmed });
-
-      let serverSaved = true;
-      try {
-        await updateProfileName({ name: trimmed });
-      } catch (error) {
-        serverSaved = !(error instanceof ProfileApiUnavailableError);
-      }
-
-      if (photoUri) {
-        try {
-          await uploadProfilePhoto(photoUri);
-        } catch (error) {
-          if (error instanceof ProfileApiUnavailableError) {
-            serverSaved = false;
-          }
-        }
-      }
-
-      toast.success(serverSaved ? 'Profile updated' : 'Saved on this device');
-      if (!serverSaved) {
-        toast.info('Profile API is not configured on the server — changes are stored locally.');
-      }
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const contributionLoading = contribution.isLoading && !contribution.data;
   const contributionYear = contribution.data?.year ?? new Date().getFullYear();
 
@@ -221,15 +175,8 @@ export default function ProfileScreen() {
           <Text style={[styles.email, { color: colors.textSecondary }]}>{user?.email ?? 'No email on file'}</Text>
 
           <Card style={styles.card} elevated>
-            <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Edit profile</Text>
-            <TextField label="Name" value={name} onChangeText={setName} placeholder="Your name" autoCapitalize="words" />
-            <Button
-              title="Save changes"
-              onPress={onSave}
-              loading={saving}
-              fullWidth
-              style={styles.saveButton}
-            />
+            <Text style={[styles.cardName, { color: colors.textPrimary }]}>{name || user?.name}</Text>
+            <Text style={[styles.cardRole, { color: colors.textSecondary }]}>{displayRole(user?.role)}</Text>
           </Card>
 
           <Button
@@ -341,12 +288,13 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 14,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+  cardName: {
+    fontSize: 18,
+    fontWeight: '800',
   },
-  saveButton: {
-    marginTop: 4,
+  cardRole: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   contributionCard: {
     width: '100%',

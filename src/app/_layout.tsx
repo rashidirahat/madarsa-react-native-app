@@ -55,7 +55,21 @@ function RootNavigator() {
         <Stack.Screen name="students/[id]" />
         <Stack.Screen name="teachers/index" />
         <Stack.Screen name="teachers/manage" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="teachers/[id]" />
+        <Stack.Screen name="teachers/[id]/index" />
+        <Stack.Screen name="teachers/[id]/students/index" />
+        <Stack.Screen
+          name="teachers/[id]/students/assign"
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen name="teachers/[id]/students/[studentId]" />
+        <Stack.Screen
+          name="teachers/[id]/students/[studentId]/exams/manage"
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="teachers/[id]/students/[studentId]/study-progress/manage"
+          options={{ presentation: 'modal' }}
+        />
       </Stack>
     </NavigationThemeProvider>
   );

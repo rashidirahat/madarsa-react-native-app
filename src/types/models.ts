@@ -37,6 +37,16 @@ export interface Student {
   phone: string;
   createdAt?: string;
   updatedAt?: string;
+  exams?: ExamRecord[];
+  studyProgress?: StudyProgressRecord[];
+  overallExamAverage?: number;
+  studyProgressSummary?: {
+    total: number;
+    notStarted: number;
+    inProgress: number;
+    completed: number;
+    averageProgressPercentage: number;
+  };
 }
 
 export interface StudentInput {
@@ -213,4 +223,72 @@ export interface TeacherInput {
   status: string;
   joiningDate?: string;
   subjects: TeacherSubjectAssignment[];
+}
+
+export interface ExamRecord {
+  _id?: string;
+  examId?: string;
+  id?: string;
+  examName: string;
+  subject: string;
+  examDate: string;
+  totalMarks: number;
+  obtainedMarks: number;
+  grade?: string;
+  remarks?: string;
+  [key: string]: unknown;
+}
+
+export interface ExamInput {
+  examName: string;
+  subject: string;
+  examDate: string;
+  totalMarks: number;
+  obtainedMarks: number;
+  grade?: string;
+  remarks?: string;
+}
+
+export const STUDY_PROGRESS_STATUSES = ['not_started', 'in_progress', 'completed'] as const;
+
+export type StudyProgressStatus = (typeof STUDY_PROGRESS_STATUSES)[number];
+
+export const STUDY_PROGRESS_STATUS_OPTIONS: { label: string; value: StudyProgressStatus }[] = [
+  { label: 'Not started', value: 'not_started' },
+  { label: 'In progress', value: 'in_progress' },
+  { label: 'Completed', value: 'completed' },
+];
+
+export interface StudyProgressRecord {
+  _id?: string;
+  studyProgressId?: string;
+  id?: string;
+  subject: string;
+  topic: string;
+  status: StudyProgressStatus;
+  progressPercentage: number;
+  notes?: string;
+  [key: string]: unknown;
+}
+
+export interface StudyProgressInput {
+  subject: string;
+  topic: string;
+  status: StudyProgressStatus;
+  progressPercentage: number;
+  notes?: string;
+}
+
+export interface TeacherAssignedStudent {
+  _id?: string;
+  id?: string;
+  studentId?: string;
+  name?: string;
+  className?: string;
+  guardianName?: string;
+  phone?: string;
+  address?: string;
+  exams?: ExamRecord[];
+  studyProgress?: StudyProgressRecord[];
+  [key: string]: unknown;
 }

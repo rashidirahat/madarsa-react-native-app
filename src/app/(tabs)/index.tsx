@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppHeader } from '@/components/AppHeader';
@@ -11,11 +12,15 @@ import { Screen } from '@/components/Screen';
 import { SearchBar } from '@/components/SearchBar';
 import { StatCard } from '@/components/StatCard';
 import { StudentCard } from '@/components/StudentCard';
+import { TeacherAssignmentsFooter } from '@/components/TeacherAssignmentsFooter';
 import { TeacherCard } from '@/components/TeacherCard';
 import { useAuth } from '@/context/AuthProvider';
+import { useAllStudentPerformance } from '@/hooks/useAllStudentPerformance';
+import { useAllTeacherAssignments } from '@/hooks/useAllTeacherAssignments';
 import { useStudents } from '@/hooks/useStudents';
 import { useTeachers } from '@/hooks/useTeachers';
 import { useTheme } from '@/theme/ThemeProvider';
+import { Student } from '@/types/models';
 import { getErrorMessage } from '@/api/errors';
 
 export default function HomeScreen() {
@@ -26,6 +31,9 @@ export default function HomeScreen() {
 
   const query = useStudents({ search });
   const { data: students, all, isLoading, isError, error, refetch, isRefetching } = query;
+
+  const performance = useAllStudentPerformance();
+  const assignments = useAllTeacherAssignments();
 
   const teachersQuery = useTeachers();
   const {
@@ -47,8 +55,8 @@ export default function HomeScreen() {
   return (
     <Screen
       scroll
-      refreshing={isRefetching || teachersRefetching}
-      onRefresh={() => Promise.all([refetch(), refetchTeachers()])}
+      refreshing={isRefetching || performance.isRefetching || assignments.isRefetching || teachersRefetching}
+      onRefresh={() => Promise.all([refetch(), performance.refetch(), assignments.refetch(), refetchTeachers()])}
     >
       <AppHeader
         title="Madarsa Manager"
@@ -121,6 +129,7 @@ export default function HomeScreen() {
               onPress={() =>
                 router.push({ pathname: '/students/[id]', params: { id: student._id } })
               }
+              summary={<StudentPerformanceSummary detail={performance.studentsById[student._id]} />}
             />
           ))}
         </View>
@@ -158,6 +167,12 @@ export default function HomeScreen() {
                 onPress={() =>
                   router.push({ pathname: '/teachers/[id]', params: { id: teacher._id } })
                 }
+                footer={
+                  <TeacherAssignmentsFooter
+                    teacherId={teacher._id}
+                    students={assignments.byTeacherId[teacher._id] ?? []}
+                  />
+                }
               />
             ))}
           </View>
@@ -165,6 +180,50 @@ export default function HomeScreen() {
       </View>
     </Screen>
   );
+}
+
+function StudentPerformanceSummary({ detail }: { detail?: Student }) {
+  const { colors } = useTheme();
+  const exams = detail?.exams ?? [];
+  const progress = detail?.studyProgress ?? [];
+  const parts: ReactNode[] = [];
+
+  if (exams.length > 0) {
+    parts.push(
+      <View key="exams" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Ionicons name="document-text-outline" size={13} color={colors.textSecondary} />
+        <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+          {`${exams.length} exam${exams.length === 1 ? '' : 's'}`}
+          {typeof detail?.overallExamAverage === 'number'
+            ? ` · ${detail.overallExamAverage}% avg`
+            : ''}
+        </Text>
+      </View>
+    );
+  }
+
+  if (progress.length > 0) {
+    parts.push(
+      <View key="progress" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Ionicons name="analytics-outline" size={13} color={colors.textSecondary} />
+        <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+          {typeof detail?.studyProgressSummary?.averageProgressPercentage === 'number'
+            ? `${detail.studyProgressSummary.averageProgressPercentage}% progress`
+            : `${progress.length} tracked`}
+        </Text>
+      </View>
+    );
+  }
+
+  if (parts.length === 0) {
+    return (
+      <Text style={{ fontSize: 13, color: colors.textSecondary, fontStyle: 'italic' }}>
+        No exams or progress yet
+      </Text>
+    );
+  }
+
+  return <>{parts}</>;
 }
 
 const styles = StyleSheet.create({

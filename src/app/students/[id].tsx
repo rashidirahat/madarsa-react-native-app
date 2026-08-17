@@ -8,10 +8,14 @@ import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { ExamItem } from '@/components/ExamItem';
 import { LoadingState } from '@/components/LoadingState';
+import { ProgressItem } from '@/components/ProgressItem';
 import { RequireAuth } from '@/components/RequireAuth';
 import { Screen } from '@/components/Screen';
+import { StatCard } from '@/components/StatCard';
 import { useAuth } from '@/context/AuthProvider';
 import { useToast } from '@/context/ToastProvider';
 import { useStudent, useStudentMutations } from '@/hooks/useStudent';
@@ -54,6 +58,9 @@ export default function StudentDetailScreen() {
       toast.error(getErrorMessage(e));
     }
   };
+
+  const exams = student?.exams ?? [];
+  const progress = student?.studyProgress ?? [];
 
   return (
     <RequireAuth>
@@ -124,6 +131,75 @@ export default function StudentDetailScreen() {
               <DetailRow icon="location-outline" label="Address" value={student.address} />
               <DetailRow icon="call-outline" label="Phone" value={student.phone} />
             </Card>
+
+            <View style={styles.statsRow}>
+              <StatCard
+                label="Exam average"
+                value={
+                  typeof student.overallExamAverage === 'number'
+                    ? `${student.overallExamAverage}%`
+                    : '—'
+                }
+                icon="ribbon-outline"
+                variant="brand"
+              />
+              <StatCard
+                label="Avg progress"
+                value={
+                  typeof student.studyProgressSummary?.averageProgressPercentage === 'number'
+                    ? `${student.studyProgressSummary.averageProgressPercentage}%`
+                    : '—'
+                }
+                icon="trending-up-outline"
+                variant="accent"
+              />
+            </View>
+
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Exams</Text>
+              <Card elevated style={styles.sectionCard}>
+                {exams.length === 0 ? (
+                  <EmptyState
+                    icon="document-text-outline"
+                    title="No exams yet"
+                    message="Exams recorded by teachers will appear here."
+                  />
+                ) : (
+                  <View style={styles.records}>
+                    {exams.map((exam) => (
+                      <ExamItem
+                        key={exam._id ?? exam.id ?? `${exam.examName}-${exam.examDate}`}
+                        exam={exam}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Card>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                Study progress
+              </Text>
+              <Card elevated style={styles.sectionCard}>
+                {progress.length === 0 ? (
+                  <EmptyState
+                    icon="analytics-outline"
+                    title="No study progress"
+                    message="Study progress recorded by teachers will appear here."
+                  />
+                ) : (
+                  <View style={styles.records}>
+                    {progress.map((item) => (
+                      <ProgressItem
+                        key={item._id ?? item.id ?? `${item.subject}-${item.topic}`}
+                        progress={item}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Card>
+            </View>
           </>
         )}
       </Screen>
@@ -198,5 +274,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     marginTop: 1,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  section: {
+    gap: 10,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sectionCard: {
+    gap: 12,
+  },
+  records: {
+    gap: 10,
   },
 });

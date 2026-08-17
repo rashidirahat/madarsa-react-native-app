@@ -11,10 +11,11 @@ interface TeacherCardProps {
   teacher: Teacher;
   onPress?: () => void;
   right?: ReactNode;
+  footer?: ReactNode;
   defaultExpanded?: boolean;
 }
 
-export function TeacherCard({ teacher, onPress, right, defaultExpanded = false }: TeacherCardProps) {
+export function TeacherCard({ teacher, onPress, right, footer, defaultExpanded = false }: TeacherCardProps) {
   const { colors } = useTheme();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const subjects = teacher.subjects ?? [];
@@ -120,6 +121,10 @@ export function TeacherCard({ teacher, onPress, right, defaultExpanded = false }
           )}
         </View>
       ) : null}
+
+      {footer ? (
+        <View style={[styles.footer, { borderTopColor: colors.border }]}>{footer}</View>
+      ) : null}
     </View>
   );
 
@@ -190,6 +195,11 @@ const styles = StyleSheet.create({
   noSubjects: {
     fontSize: 13,
     fontStyle: 'italic',
+  },
+  footer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 12,
+    gap: 10,
   },
   subjectChip: {
     flexDirection: 'row',

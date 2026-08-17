@@ -3,7 +3,6 @@ import { Redirect, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-
 import { getErrorMessage } from '@/api/errors';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
@@ -17,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { SearchBar } from '@/components/SearchBar';
 import { Select } from '@/components/Select';
 import { StudentCard } from '@/components/StudentCard';
+import { TeacherAssignedCount } from '@/components/TeacherAssignedCount';
 import { TeacherCard } from '@/components/TeacherCard';
 import { TextField } from '@/components/TextField';
 import { useAuth } from '@/context/AuthProvider';
@@ -212,6 +212,29 @@ function TeachersSection() {
                   </Pressable>
                 </View>
               }
+              footer={
+                <View style={styles.assignmentFooter}>
+                  <TeacherAssignedCount
+                    teacherId={teacher._id}
+                    onPress={() =>
+                      router.push({ pathname: '/teachers/[id]/students', params: { id: teacher._id } })
+                    }
+                  />
+                  <Button
+                    title="Assign Student"
+                    icon="person-add-outline"
+                    variant="secondary"
+                    size="sm"
+                    onPress={() =>
+                      router.push({
+                        pathname: '/teachers/[id]/students/assign',
+                        params: { id: teacher._id },
+                      })
+                    }
+                    style={styles.assignButton}
+                  />
+                </View>
+              }
             />
           ))}
         </View>
@@ -402,9 +425,9 @@ export default function AdminScreen() {
     <Screen scroll onRefresh={handleRefresh}>
       <AppHeader title="Admin" subtitle="Management console" />
       <View style={styles.content}>
+        <ExpensesSection />
         <StudentsSection />
         <TeachersSection />
-        <ExpensesSection />
         <RolesSection />
       </View>
     </Screen>
@@ -441,6 +464,14 @@ const styles = StyleSheet.create({
   rowActions: {
     flexDirection: 'row',
     gap: 8,
+  },
+  assignmentFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  assignButton: {
+    flex: 1,
   },
   actionButton: {
     width: 34,
